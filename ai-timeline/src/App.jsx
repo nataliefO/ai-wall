@@ -15,7 +15,7 @@ const ImpactView = ({ onBack }) => {
   const mandate1Ref = useRef(null);
   const mandate2Ref = useRef(null);
 
-  // Keyboard navigation for cards, final section, personal impact, benefit cards, and mandates
+  // Keyboard navigation for cards, personal impact, benefit cards, and mandates
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
@@ -26,9 +26,7 @@ const ImpactView = ({ onBack }) => {
           setCurrentBenefitIndex(prev => prev + 1);
         } else if (currentCardIndex < 2) {
           setCurrentCardIndex(prev => prev + 1);
-        } else if (currentCardIndex === 2 && !showFinalSection) {
-          setShowFinalSection(true);
-        } else if (showFinalSection && !showPersonalImpact) {
+        } else if (currentCardIndex === 2 && !showPersonalImpact) {
           setShowPersonalImpact(true);
           setCurrentBenefitIndex(-1); // Reset benefit cards
         }
@@ -41,8 +39,6 @@ const ImpactView = ({ onBack }) => {
         } else if (showPersonalImpact) {
           setShowPersonalImpact(false);
           setCurrentBenefitIndex(-1);
-        } else if (showFinalSection) {
-          setShowFinalSection(false);
         } else if (currentCardIndex > -1) {
           setCurrentCardIndex(prev => prev - 1);
         }
@@ -51,18 +47,9 @@ const ImpactView = ({ onBack }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentCardIndex, showFinalSection, showPersonalImpact, currentBenefitIndex, showSurvivalPage, currentMandateIndex]);
+  }, [currentCardIndex, showPersonalImpact, currentBenefitIndex, showSurvivalPage, currentMandateIndex]);
 
-  // Auto-show final section after 5 seconds when all cards are visible
-  useEffect(() => {
-    if (currentCardIndex === 2 && !showFinalSection) {
-      const timer = setTimeout(() => {
-        setShowFinalSection(true);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [currentCardIndex, showFinalSection]);
+
 
 
 
@@ -71,9 +58,7 @@ const ImpactView = ({ onBack }) => {
       setCurrentBenefitIndex(prev => prev + 1);
     } else if (currentCardIndex < 2) {
       setCurrentCardIndex(prev => prev + 1);
-    } else if (currentCardIndex === 2 && !showFinalSection) {
-      setShowFinalSection(true);
-    } else if (showFinalSection && !showPersonalImpact) {
+    } else if (currentCardIndex === 2 && !showPersonalImpact) {
       setShowPersonalImpact(true);
       setCurrentBenefitIndex(-1);
     }
@@ -524,49 +509,29 @@ const ImpactView = ({ onBack }) => {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4">
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 flex gap-8">
           {(currentCardIndex > -1 || showFinalSection || showPersonalImpact) && (
             <button 
               onClick={handlePrev}
-              className="p-0 m-0 text-white bg-transparent border-0 hover:text-pink-400 hover:scale-110 transition-all group"
+              className="text-white bg-transparent border-0 hover:text-pink-400 transition-all font-mono text-xs tracking-wider uppercase"
               style={{ background: 'transparent', backgroundColor: 'transparent' }}
               aria-label="Previous Card"
             >
-              <ChevronUp size={24} className="group-hover:-translate-y-1 transition-transform" />
+              ← PREVIOUS
             </button>
           )}
           
-          <button 
-            onClick={handleNext}
-            disabled={showPersonalImpact}
-            className={`
-              p-0 m-0 bg-transparent border-0 transition-all group flex items-center justify-center
-              ${showPersonalImpact
-                ? 'text-slate-600 cursor-not-allowed' 
-                : 'text-white hover:text-purple-400 hover:scale-110'}
-            `}
-            style={{ background: 'transparent', backgroundColor: 'transparent' }}
-            aria-label="Next Card"
-          >
-            {showPersonalImpact ? (
-              <div className="w-6 h-6 rounded-full bg-slate-600" />
-            ) : (
-              <ChevronDown size={24} className="group-hover:translate-y-1 transition-transform" />
-            )}
-          </button>
-        </div>
-
-        {/* Final Section - Show after all cards (5 seconds or keyboard) */}
-        {showFinalSection && !showPersonalImpact && (
-          <div className="flex flex-col items-center justify-center mt-16 animate-[fadeIn_1s_ease-out]">
-            <button
-              onClick={() => setShowPersonalImpact(true)}
-              className="px-8 py-4 text-2xl font-bold text-white bg-gradient-to-r from-pink-600 to-purple-600 rounded-full shadow-2xl shadow-pink-500/50 hover:scale-110 hover:shadow-pink-500/70 transition-all duration-300 animate-pulse flex items-center gap-3"
+          {!showPersonalImpact && (
+            <button 
+              onClick={handleNext}
+              className="text-white bg-transparent border-0 hover:text-purple-400 transition-all font-mono text-xs tracking-wider uppercase"
+              style={{ background: 'transparent', backgroundColor: 'transparent' }}
+              aria-label="Next Card"
             >
-              WHY IT SHOULD MATTER TO YOU {'>>>>'}
+              NEXT →
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -581,9 +546,6 @@ const App = () => {
   
   // State for view switching between timeline and impact page
   const [currentView, setCurrentView] = useState('timeline');
-  
-  // State for showing the CTA overlay on the future era
-  const [showFutureCTA, setShowFutureCTA] = useState(false);
   
   // Removed showLinear toggle/button; keeping layout simpler
 
@@ -698,6 +660,8 @@ const App = () => {
   const handleNext = () => {
     if (activeEraIndex < eras.length - 1) {
       setActiveEraIndex(prev => prev + 1);
+    } else if (activeEraIndex === eras.length - 1) {
+      setCurrentView('impact');
     }
   };
 
@@ -713,6 +677,8 @@ const App = () => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         if (activeEraIndex < eras.length - 1) {
           setActiveEraIndex(prev => prev + 1);
+        } else if (activeEraIndex === eras.length - 1) {
+          setCurrentView('impact');
         }
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         if (activeEraIndex > 0) {
@@ -723,21 +689,6 @@ const App = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeEraIndex, eras.length]);
-
-  // CTA timing logic - show overlay after 2 seconds on future era
-  useEffect(() => {
-    if (activeEraIndex === eras.length - 1) {
-      const timer = setTimeout(() => {
-        setShowFutureCTA(true);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-    
-    // Reset CTA when not on future era
-    const timer = setTimeout(() => setShowFutureCTA(false), 0);
-    return () => clearTimeout(timer);
   }, [activeEraIndex, eras.length]);
 
   // Calculate dynamic point on the curve based on visualProgress
@@ -877,26 +828,6 @@ WALL</h1>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent"></div>
         </div>
 
-        {/* CTA OVERLAY - Shows on left panel over the grid when on future era */}
-        {activeEraIndex === eras.length - 1 && showFutureCTA && (
-          <div className="absolute inset-0 flex items-center justify-center z-50 animate-[fadeIn_0.8s_ease-out] pointer-events-none">
-            <div className="text-center space-y-8 animate-[slideUp_1s_ease-out] pointer-events-auto">
-              <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 tracking-tight animate-[fadeIn_1.2s_ease-out] drop-shadow-[0_0_30px_rgba(0,0,0,0.9)]">
-                WHY THIS
-              </h2>
-                  <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 tracking-tight animate-[fadeIn_1.2s_ease-out] drop-shadow-[0_0_30px_rgba(0,0,0,0.9)]">
-                MATTERS FOR YOU
-              </h2>
-              <button
-                onClick={() => setCurrentView('impact')}
-                className="px-8 py-4 text-2xl font-bold text-white bg-gradient-to-r from-pink-600 to-purple-600 rounded-full shadow-2xl shadow-pink-500/50 hover:scale-110 hover:shadow-pink-500/70 transition-all duration-300 animate-pulse"
-              >
-                ENTER {'>>>>>>'}
-              </button>
-            </div>
-          </div>
-        )}
-
       </div>
 
       {/* RIGHT PANEL: The Content */}
@@ -905,35 +836,25 @@ WALL</h1>
         className="w-full md:w-1/2 h-full relative z-20 bg-slate-950/50 backdrop-blur-sm md:backdrop-blur-none md:bg-transparent overflow-hidden"
       >
         {/* Navigation Buttons */}
-        <div className="absolute bottom-8 right-8 z-50 flex flex-col gap-4">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 flex gap-8">
            {activeEraIndex > 0 && (
                <button 
                   onClick={handlePrev}
-                  className="p-0 m-0 text-white bg-transparent border-0 hover:text-pink-400 hover:scale-110 transition-all group"
+                  className="text-white bg-transparent border-0 hover:text-pink-400 transition-all font-mono text-xs tracking-wider uppercase"
                   style={{ background: 'transparent', backgroundColor: 'transparent' }}
                   aria-label="Previous Era"
                >
-                  <ChevronUp size={24} className="group-hover:-translate-y-1 transition-transform" />
+                  ← PREVIOUS
                </button>
            )}
            
            <button 
               onClick={handleNext}
-              disabled={activeEraIndex === eras.length - 1}
-              className={`
-                p-0 m-0 bg-transparent border-0 transition-all group flex items-center justify-center
-                ${activeEraIndex === eras.length - 1 
-                    ? 'text-slate-600 cursor-not-allowed' 
-                    : 'text-white hover:text-purple-400 hover:scale-110'}
-              `}
+              className="text-white bg-transparent border-0 hover:text-purple-400 transition-all font-mono text-xs tracking-wider uppercase"
               style={{ background: 'transparent', backgroundColor: 'transparent' }}
-              aria-label="Next Era"
+              aria-label="Next"
            >
-              {activeEraIndex === eras.length - 1 ? (
-                 <div className="w-6 h-6 rounded-full bg-slate-600" />
-              ) : (
-                 <ChevronDown size={24} className="group-hover:translate-y-1 transition-transform" />
-              )}
+              NEXT →
            </button>
         </div>
 
